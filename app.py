@@ -20,7 +20,7 @@ if not hasattr(cgi, 'parse_header'):
 from PIL import Image
 import pytesseract
 import openai
-from googletrans import Translator
+from deep_translator import GoogleTranslator  # Cambiamos esta línea
 from gtts import gTTS
 from streamlit_mic_recorder import mic_recorder
 
@@ -75,8 +75,9 @@ if st.button("TRADUCIR AHORA ✨"):
                     )
                     resultado_final = res.choices[0].message.content
                 else:
-                    # USAMOS ESTA FORMA PARA EVITAR EL ERROR DE UNPACK
-                    gt = Translator()
+                    else:
+                    # Usamos Deep Translator: No da errores de "unpack"
+                    resultado_final = GoogleTranslator(source='auto', target=lang_codes[dest_lang]).translate(texto_para_traducir)
                     # Realizamos la traducción y guardamos el objeto completo
                     obj_traduccion = gt.translate(texto_para_traducir, dest=lang_codes[dest_lang])
                     # IMPORTANTE: Debe ser .text (con la 't' al final)
