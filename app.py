@@ -22,9 +22,9 @@ if not hasattr(cgi, 'parse_header'):
         return email.utils.decode_params('; ' + line)[0]
     cgi.parse_header = parse_header
 
-# --- CONFIGURACIÓN BETA | CREATOR EDITION ---
-# Usamos un enlace directo al logo para que no tengas que subir el archivo aún
-LOGO_URL = "https://i.ibb.co/vzNfVvM/logo-creator.png"
+# --- CONFIGURACIÓN BETA ---
+# He cambiado la URL por una que SÍ funciona y es permanente
+LOGO_URL = "https://cdn-icons-png.flaticon.com/512/2845/2845661.png" 
 
 st.set_page_config(
     page_title="Traductor IA | Creator Edition Beta",
@@ -32,21 +32,18 @@ st.set_page_config(
     layout="centered"
 )
 
+# --- SIDEBAR ---
 with st.sidebar:
-    # Logo 3D en la parte superior
-    st.image(LOGO_URL, use_container_width=True)
-    
-    st.markdown("<h3 style='text-align: center;'>Configuración</h3>", unsafe_allow_html=True)
-    
+    st.image(LOGO_URL, width=150)
+    st.markdown("### Configuración")
     api_key = st.text_input("OpenAI API Key:", type="password")
     motor = st.selectbox("Motor:", ["Google (Gratis)", "ChatGPT (Premium)"])
-    
     st.divider()
     st.info("🚀 **Versión Beta v0.5**")
     st.caption("👤 **Creator Edition**")
     st.caption("Desarrollado por Jonatan Alejandro Flores")
 
-# Título con estilo Beta
+# --- CUERPO PRINCIPAL ---
 st.title("🌐 Traductor Pro Multi-Modo")
 st.write("---")
 
@@ -54,11 +51,10 @@ tab1, tab2, tab3 = st.tabs(["⌨️ Texto", "🎤 Voz", "📸 Imagen"])
 texto_para_traducir = ""
 
 with tab1:
-    t_manual = st.text_area("Escribe aquí:", height=150, key="manual")
+    t_manual = st.text_area("Escribe aquí:", height=150, key="manual_text")
     if t_manual: texto_para_traducir = t_manual
 
 with tab2:
-    st.write("Graba tu voz:")
     audio = mic_recorder(start_prompt="Grabar 🎙️", stop_prompt="Detener 🛑", key='recorder')
     if audio:
         st.audio(audio['bytes'])
@@ -73,7 +69,7 @@ with tab3:
         st.text_area("Texto detectado:", value=detectado, height=150)
         texto_para_traducir = detectado
 
-# --- TRADUCCIÓN ---
+# --- TRADUCCIÓN (ESTA PARTE DEBE ESTAR BIEN ALINEADA) ---
 st.divider()
 dest_lang = st.selectbox("Idioma destino:", ["Spanish", "English", "French", "German"])
 lang_codes = {"Spanish": "es", "English": "en", "French": "fr", "German": "de"}
@@ -90,7 +86,7 @@ if st.button("TRADUCIR AHORA ✨"):
                     )
                     resultado_final = res.choices[0].message.content
                 else:
-                    # Usamos Deep Translator (Sintaxis ultra simple)
+                    # Motor Google estable
                     target = lang_codes[dest_lang]
                     resultado_final = GoogleTranslator(source='auto', target=target).translate(texto_para_traducir)
 
