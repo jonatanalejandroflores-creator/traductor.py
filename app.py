@@ -3,7 +3,7 @@ import sys
 import io
 from types import ModuleType
 
-# --- 1. PARCHE CGI ---
+# --- 1. PARCHE DE COMPATIBILIDAD ---
 try:
     import cgi
 except ImportError:
@@ -24,8 +24,8 @@ from googletrans import Translator
 from gtts import gTTS
 from streamlit_mic_recorder import mic_recorder
 
-# --- 3. CONFIGURACIÓN ---
-st.set_page_config(page_title="Traductor Pro IA", page_icon="🌐", layout="centered")
+# --- 3. INTERFAZ ---
+st.set_page_config(page_title="Traductor Pro IA", page_icon="🌐")
 st.title("🌐 Traductor Pro Multi-Modo")
 
 with st.sidebar:
@@ -33,64 +33,56 @@ with st.sidebar:
     api_key = st.text_input("OpenAI API Key:", type="password")
     motor = st.selectbox("Motor:", ["Google (Gratis)", "ChatGPT (Premium)"])
 
-# --- 4. INTERFAZ ---
-tab1, tab2, tab3 = st.tabs(["⌨️ Texto/Canción", "🎤 Voz", "📸 Imagen (OCR)"])
-texto_para_traducir = ""
+tab1, tab2, tab3 = st.tabs(["⌨️ Texto", "🎤 Voz", "📸 Imagen"])
+texto_final = ""
 
 with tab1:
-    texto_manual = st.text_area("Escribe o pega aquí:", height=200, key="manual")
-    if texto_manual:
-        texto_para_traducir = texto_manual
+    t_manual = st.text_area("Escribe aquí:", key="t_manual")
+    if t_manual: texto_final = t_manual
 
 with tab2:
-    st.write("Graba tu voz:")
-    audio_data = mic_recorder(start_prompt="Grabar 🎙️", stop_prompt="Detener 🛑", key='recorder')
-    if audio_data:
-        st.audio(audio_data['bytes'])
-        st.info("Audio capturado.")
+    audio = mic_recorder(start_prompt="Grabar 🎙️", stop_prompt="Detener 🛑", key='recorder')
+    if audio: st.audio(audio['bytes'])
 
 with tab3:
-    archivo_imagen = st.file_uploader("Sube una imagen:", type=['png', 'jpg', 'jpeg'])
-    if archivo_imagen:
-        img = Image.open(archivo_imagen)
-        st.image(img, caption="Imagen cargada", use_container_width=True)
-        # Extraemos el texto y lo guardamos
-        texto_detectado = pytesseract.image_to_string(img)
-        st.text_area("Texto detectado:", value=texto_detectado, height=150)
-        texto_para_traducir = texto_detectado
+    img_file = st.file_uploader("Sube imagen:", type=['png', 'jpg', 'jpeg'])
+    if img_file:
+        img = Image.open(img_file)
+        st.image(img, use_container_width=True)
+        texto_final = pytesseract.image_to_string(img)
+        st.text_area("Detectado:", value=texto_final)
 
-# --- 5. LÓGICA DE TRADUCCIÓN SIN ERRORES ---
+# --- 4. TRADUCCIÓN CORREGIDA ---
 st.divider()
-dest_lang = st.selectbox("Idioma destino:", ["Spanish", "English", "French", "German"])
-lang_codes = {"Spanish": "es", "English": "en", "French": "fr", "German": "de"}
+idioma = st.selectbox("Destino:", ["Spanish", "English", "French", "German"])
+codigos = {"Spanish": "es", "English": "en", "French": "fr", "German": "de"}
 
 if st.button("TRADUCIR AHORA ✨"):
-    if texto_para_traducir and texto_para_traducir.strip():
+    if texto_final.strip():
         try:
             with st.spinner("Traduciendo..."):
                 if motor == "ChatGPT (Premium)" and api_key:
                     client = openai.OpenAI(api_key=api_key)
-                    response = client.chat.completions.create(
+                    res = client.ChatCompletion.create(
                         model="gpt-3.5-turbo",
-                        messages=[{"role": "user", "content": f"Traduce al {dest_lang}: {texto_para_traducir}"}]
+                        messages=[{"role": "user", "content": f"Translate to {idioma}: {texto_final}"}]
                     )
-                    resultado_final = response.choices[0].message.content
+                    resultado = res.choices[0].message.content
                 else:
-                    # Motor de Google blindado
-                    translator = Translator()
-                    # No usamos desempaquetado con comas aquí
-                    traduccion = translator.translate(texto_para_traducir, dest=lang_codes[dest_lang])
-                    resultado_final = traduccion.text
+                    # CAMBIO CLAVE: Manejo simple del objeto de traducción
+                    gt = Translator()
+                    traduccion_obj = gt.translate(texto_final, dest=codigos[idioma])
+                    resultado = traduccion_obj.text # Acceso directo a la propiedad .text
 
-                st.success("**Resultado:**")
-                st.write(resultado_final)
+                st.success(f"**Resultado:** {resultado}")
                 
-                tts = gTTS(text=resultado_final, lang=lang_codes[dest_lang])
-                fp = io.BytesIO()
-                tts.write_to_fp(fp)
-                fp.seek(0)
-                st.audio(fp)
+                # Audio
+                tts = gTTS(text=resultado, lang=codigos[idioma])
+                audio_fp = io.BytesIO()
+                tts.write_to_fp(audio_fp)
+                audio_fp.seek(0)
+                st.audio(audio_fp)
         except Exception as e:
             st.error(f"Error técnico: {e}")
     else:
-        st.warning("⚠️ No hay texto para traducir. Escribe algo o sube una imagen.")
+        st.warning("Escribe algo o sube una imagen primero.")
