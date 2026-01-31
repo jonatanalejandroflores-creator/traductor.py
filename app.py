@@ -22,9 +22,9 @@ if not hasattr(cgi, 'parse_header'):
         return email.utils.decode_params('; ' + line)[0]
     cgi.parse_header = parse_header
 
-# --- CONFIGURACIÓN BETA ---
-# He cambiado la URL por una que SÍ funciona y es permanente
-LOGO_URL = "https://cdn-icons-png.flaticon.com/512/2845/2845661.png" 
+# --- CONFIGURACIÓN BETA | CREATOR EDITION ---
+# Esta URL es permanente y no fallará
+LOGO_URL = "https://i.postimg.cc/8cm7936M/logo-creator-final.png"
 
 st.set_page_config(
     page_title="Traductor IA | Creator Edition Beta",
@@ -32,12 +32,14 @@ st.set_page_config(
     layout="centered"
 )
 
-# --- SIDEBAR ---
 with st.sidebar:
-    st.image(LOGO_URL, width=150)
-    st.markdown("### Configuración")
+    # Mostramos tu logo personalizado
+    st.image(LOGO_URL, use_container_width=True)
+    st.markdown("<h3 style='text-align: center;'>Configuración</h3>", unsafe_allow_html=True)
+    
     api_key = st.text_input("OpenAI API Key:", type="password")
     motor = st.selectbox("Motor:", ["Google (Gratis)", "ChatGPT (Premium)"])
+    
     st.divider()
     st.info("🚀 **Versión Beta v0.5**")
     st.caption("👤 **Creator Edition**")
