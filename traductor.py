@@ -56,7 +56,7 @@ with st.sidebar:
         except Exception:
             st.write("🌐 **Traductor Creator Edition**")
     
-    st.info("🚀 **Versión Beta v0.5**")
+    st.info("🚀 **Versión Beta v0.5.1 - Token Secure**")
     st.markdown("<h3 style='text-align: center;'>Configuración</h3>", unsafe_allow_html=True)
     
     api_key = st.text_input("OpenAI API Key:", type="password")
