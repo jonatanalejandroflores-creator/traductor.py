@@ -24,6 +24,15 @@ if not hasattr(cgi, 'parse_header'):
 
 # --- CONFIGURACIÓN ---
 import os
+# ... tus otros imports ...
+
+# Intentar obtener la clave desde el sistema (Nube o .env)
+api_key = os.getenv("OPENAI_API_KEY")
+
+# Si no existe en el sistema, mostrar el input (como respaldo)
+if not api_key:
+    with st.sidebar:
+        api_key = st.text_input("OpenAI API Key:", type="password")
 
 # Verificamos si el archivo existe para evitar errores
 LOGO_PATH = "logo_beta.png" if os.path.exists("logo_beta.png") else None
