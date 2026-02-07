@@ -2,3 +2,7 @@ streamlit
 numpy
 pillow
 deep-translator
+openai
+gTTS
+streamlit-mic-recorder
+pytesseract
